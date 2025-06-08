@@ -3,9 +3,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-import random
-
-from keyboard.inline import again_markup
+from keyboard.inline import choose_level_kb, easy_again_markup, medium_again_markup, hard_again_markup
 from keyboard.reply import start_kb, delete_kb
 
 
@@ -13,22 +11,15 @@ router = Router()
 
 
 class GuessingNumber(StatesGroup):
+    level = ''
     attempts = 0
-    number = random.randint(1, 101)
+    number = 0
     guessing = State()
 
 
 @router.message(StateFilter(None), F.text == "Играть")
-async def play(message: types.Message, state: FSMContext):
-    await message.answer("Бот загадал число от 1 до 100, попробуй угадать!", reply_markup=delete_kb)
-    await state.set_state(GuessingNumber.guessing)
-
-
-@router.callback_query(StateFilter(None), F.data == "play_again")
-async def again(callback: types.CallbackQuery, state: FSMContext):
-    await callback.answer("Можешь играть")
-    await callback.message.answer("Бот загадал число от 1 до 100, попробуй угадать!")
-    await state.set_state(GuessingNumber.guessing)
+async def play(message: types.Message):
+    await message.answer('Выбери режим(подробнее о режимах можешь посмотреть в пункте "О боте")', reply_markup=choose_level_kb())
 
 
 @router.message(StateFilter('*'), Command("отмена"))
@@ -56,7 +47,12 @@ async def guessing_number(message: types.Message, state: FSMContext):
             await message.answer("Неверно, число больше")
             await state.set_state(GuessingNumber.guessing)
         else:
-            await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=again_markup)
+            if GuessingNumber.level == 'easy':
+                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=easy_again_markup())
+            elif GuessingNumber.level == 'medium':
+                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=medium_again_markup())
+            elif GuessingNumber.level == 'hard':
+                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=hard_again_markup())
             await state.clear()
             GuessingNumber.attempts = 0
     except ValueError:

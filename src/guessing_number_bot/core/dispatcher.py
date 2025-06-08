@@ -9,6 +9,7 @@ import logging
 from handlers.common.start import router as start_router
 from handlers.common.info import router as info_router
 from handlers.common.game import router as game_router
+from handlers.common.level import router as level_router
 
 
 logging.basicConfig(
@@ -23,4 +24,4 @@ bot = Bot(
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)
 )
 
-dp.include_routers(start_router, info_router, game_router)
+dp.include_routers(start_router, info_router, game_router, level_router)
