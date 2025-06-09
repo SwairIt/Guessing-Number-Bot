@@ -1,4 +1,4 @@
-![Угадай Число](https://github.com/SwairIt/Guessing-Number-Bot/blob/main/assets/banner.png)
+![Угадай Число](https://github.com/SwairIt/Guessing-Number-Bot/blob/main/assets/main_banner.png)
 
 # 🎯 Угадай Число
 
