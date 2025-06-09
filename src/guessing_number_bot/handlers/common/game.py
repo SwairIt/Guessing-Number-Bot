@@ -6,6 +6,13 @@ from aiogram.fsm.state import State, StatesGroup
 from keyboard.inline import choose_level_kb, easy_again_markup, medium_again_markup, hard_again_markup
 from keyboard.reply import start_kb, delete_kb
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.orm_query import (
+    orm_update_points,
+    increment_points
+)
+
 
 router = Router()
 
@@ -14,6 +21,7 @@ class GuessingNumber(StatesGroup):
     level = ''
     attempts = 0
     number = 0
+    data = [0, 0]
     guessing = State()
 
 
@@ -35,7 +43,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(GuessingNumber.guessing, F.text)
-async def guessing_number(message: types.Message, state: FSMContext):
+async def guessing_number(message: types.Message, state: FSMContext, session: AsyncSession):
     try:
         user_message = int(message.text)
         GuessingNumber.attempts += 1
@@ -48,11 +56,14 @@ async def guessing_number(message: types.Message, state: FSMContext):
             await state.set_state(GuessingNumber.guessing)
         else:
             if GuessingNumber.level == 'easy':
-                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=easy_again_markup())
+                await increment_points(session=session, user_id=message.from_user.id, value=5)
+                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! И получил 5 очков! Попробуй еще раз.", reply_markup=easy_again_markup())
             elif GuessingNumber.level == 'medium':
-                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=medium_again_markup())
+                await increment_points(session=session, user_id=message.from_user.id, value=15)
+                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! И получил 15 очков! Попробуй еще раз.", reply_markup=medium_again_markup())
             elif GuessingNumber.level == 'hard':
-                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! Попробуй еще раз.", reply_markup=hard_again_markup())
+                await increment_points(session=session, user_id=message.from_user.id, value=50)
+                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! И получил 50 очков! Попробуй еще раз.", reply_markup=hard_again_markup())
             await state.clear()
             GuessingNumber.attempts = 0
     except ValueError:

@@ -2,6 +2,10 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
+from database.engine import session_maker
+
+from middlewares.db import DbSessionMiddleware
+
 from config import settings
 
 import logging
@@ -24,4 +28,5 @@ bot = Bot(
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)
 )
 
+dp.update.middleware.register(DbSessionMiddleware(session_maker))
 dp.include_routers(start_router, info_router, game_router, level_router)
