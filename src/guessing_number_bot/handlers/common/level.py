@@ -17,7 +17,7 @@ router = Router()
 async def easy_level(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer("Ты выбрал легкий уровень")
     await callback.message.answer("Бот загадал число от 1 до 10, попробуй угадать!", reply_markup=delete_kb)
-    GuessingNumber.number = random.randint(1, 11)
+    GuessingNumber.number = random.randint(1, 10)
     GuessingNumber.level = 'easy'
     await state.set_state(GuessingNumber.guessing)
 
@@ -26,7 +26,7 @@ async def easy_level(callback: types.CallbackQuery, state: FSMContext):
 async def medium_level(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer("Ты выбрал средний уровень")
     await callback.message.answer("Бот загадал число от 1 до 100, попробуй угадать!", reply_markup=delete_kb)
-    GuessingNumber.number = random.randint(1, 101)
+    GuessingNumber.number = random.randint(1, 100)
     GuessingNumber.level = 'medium'
     await state.set_state(GuessingNumber.guessing)
 
@@ -35,6 +35,6 @@ async def medium_level(callback: types.CallbackQuery, state: FSMContext):
 async def hard_level(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer("Ты выбрал тяжелый уровень")
     await callback.message.answer("Бот загадал число от 1 до 1000, попробуй угадать!", reply_markup=delete_kb)
-    GuessingNumber.number = random.randint(1, 1001)
+    GuessingNumber.number = random.randint(1, 1000)
     GuessingNumber.level = 'hard'
     await state.set_state(GuessingNumber.guessing)
