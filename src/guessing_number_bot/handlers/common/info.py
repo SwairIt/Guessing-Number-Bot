@@ -2,7 +2,7 @@ from aiogram import F, Router, types
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.orm_query import orm_get_user_points
+from database.orm_query import orm_get_user_db
 
 
 router = Router()
@@ -10,9 +10,13 @@ router = Router()
 
 @router.message(F.text == "Моя статистика")
 async def statistics(message: types.Message, session:AsyncSession):
-    user_points = await orm_get_user_points(session, message.from_user.id)
-    points = user_points.quantity
-    await message.answer(f'<i>By @HiL1ne</i>\n\n<b>Статистика игрока {message.from_user.first_name}:</b>\n\nОчки --> {points}')
+    user_db = await orm_get_user_db(session, message.from_user.id)
+    points = user_db.quantity
+    attempts = user_db.attempts
+    games = user_db.games
+    winner_games = user_db.winner_games
+    cancelled_games = games - winner_games
+    await message.answer(f'<i>By @HiL1ne</i>\n\n<b>Статистика игрока {message.from_user.first_name}:</b>\n\nВсего очков --> {points}\n\nВсего попыток --> {attempts}\n\nВсего начатых игр --> {games}\n\nВсего выигранных игр --> {winner_games}\n\nВсего отмененных игр --> {cancelled_games}')
 
 
 @router.message(F.text == "О боте")

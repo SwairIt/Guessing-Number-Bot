@@ -9,8 +9,7 @@ from keyboard.reply import start_kb, delete_kb
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.orm_query import (
-    orm_update_points,
-    increment_points
+    increment_user_db
 )
 
 
@@ -32,12 +31,15 @@ async def play(message: types.Message):
 
 @router.message(StateFilter('*'), Command("отмена"))
 @router.message(StateFilter('*'), F.text.casefold() == "отмена")
-async def cancel_handler(message: types.Message, state: FSMContext) -> None:
+async def cancel_handler(message: types.Message, state: FSMContext, session: AsyncSession) -> None:
 
     current_state = await state.get_state()
     if current_state is None:
         return
 
+    attempts = GuessingNumber.attempts
+    await increment_user_db(session=session, user_id=message.from_user.id, value_points=0, value_attempts=attempts, value_games=1, value_winner_games=0)
+    GuessingNumber.attempts = 0
     await state.clear()
     await message.answer("Ты отменил игру!", reply_markup=start_kb)
 
@@ -45,6 +47,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 @router.message(GuessingNumber.guessing, F.text)
 async def guessing_number(message: types.Message, state: FSMContext, session: AsyncSession):
     try:
+        user_id = message.from_user.id
         user_message = int(message.text)
         GuessingNumber.attempts += 1
         await state.update_data(guessing=user_message)
@@ -55,15 +58,16 @@ async def guessing_number(message: types.Message, state: FSMContext, session: As
             await message.answer("Неверно, число больше")
             await state.set_state(GuessingNumber.guessing)
         else:
+            attempts = GuessingNumber.attempts 
             if GuessingNumber.level == 'easy':
-                await increment_points(session=session, user_id=message.from_user.id, value=5)
-                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! И получил 5 очков! Попробуй еще раз.", reply_markup=easy_again_markup())
+                await increment_user_db(session=session, user_id=user_id, value_points=5, value_attempts=attempts, value_games=1, value_winner_games=1)
+                await message.answer(f"Верно! Ты угадал с {attempts} попытки! И получил 5 очков! Попробуй еще раз.", reply_markup=easy_again_markup())
             elif GuessingNumber.level == 'medium':
-                await increment_points(session=session, user_id=message.from_user.id, value=15)
-                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! И получил 15 очков! Попробуй еще раз.", reply_markup=medium_again_markup())
+                await increment_user_db(session=session, user_id=user_id, value_points=15, value_attempts=attempts, value_games=1, value_winner_games=1)
+                await message.answer(f"Верно! Ты угадал с {attempts} попытки! И получил 15 очков! Попробуй еще раз.", reply_markup=medium_again_markup())
             elif GuessingNumber.level == 'hard':
-                await increment_points(session=session, user_id=message.from_user.id, value=50)
-                await message.answer(f"Верно! Ты угадал с {GuessingNumber.attempts} попытки! И получил 50 очков! Попробуй еще раз.", reply_markup=hard_again_markup())
+                await increment_user_db(session=session, user_id=user_id, value_points=50, value_attempts=attempts, value_games=1, value_winner_games=1)
+                await message.answer(f"Верно! Ты угадал с {attempts} попытки! И получил 50 очков! Попробуй еще раз.", reply_markup=hard_again_markup())
             await state.clear()
             GuessingNumber.attempts = 0
     except ValueError:
