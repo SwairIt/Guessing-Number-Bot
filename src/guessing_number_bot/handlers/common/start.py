@@ -18,10 +18,10 @@ async def start(message: types.Message, session: AsyncSession):
     user_db = await orm_get_user_db(session, user_id)
 
     try:
-        check = user_db.id
+        user_db.id
     except AttributeError:
         print('Была создана бд для еще одного юзера')
-        await orm_add_db(session, {"user_id": user_id, "quantity": 0, "attempts": 0, "games": 0, "winner_games": 0})
+        await orm_add_db(session, {"user_id": user_id, "quantity": 0, "attempts": 0, "games": 0, "winner_games": 0, "first_name": message.from_user.username})
     await message.answer('Добро пожаловать в "Угадай число", выбери что хочешь сделать.', reply_markup=start_kb)
 
 

@@ -7,6 +7,7 @@ from database.models import User
 async def orm_add_db(session: AsyncSession, data: dict):
     obj = User(
         user_id=data["user_id"],
+        first_name=data["first_name"],
         quantity=data["quantity"],
         attempts=data["attempts"],
         games=data["games"],
@@ -27,6 +28,11 @@ async def orm_get_user_db(session: AsyncSession, user_id: int):
         select(User).where(User.user_id == user_id)
     )
     return result.scalar_one_or_none()
+
+
+async def orm_get_all_dbs(session: AsyncSession):
+    result = await session.execute(select(User))
+    return result.scalars().all()
 
 
 async def increment_user_db(session: AsyncSession, user_id: int, value_points: int, value_attempts: int, value_games: int, value_winner_games: int):

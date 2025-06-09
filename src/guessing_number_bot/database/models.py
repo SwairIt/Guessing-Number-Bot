@@ -20,3 +20,4 @@ class User(Base):
                                      doc='Количество игр пользователя')
     winner_games: Mapped[int] = mapped_column(default=0, server_default='0', 
                                      doc='Количество выигранных игр пользователя')
+    first_name: Mapped[str] = mapped_column(nullable=True)
